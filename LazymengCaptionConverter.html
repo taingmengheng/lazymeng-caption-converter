@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lazymeng Caption Converter</title>
+    
+    <!-- Favicon: Using an SVG Data URL for the ✍️ icon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✍️</text></svg>">
+    
+    <!-- Load Tailwind CSS for simple, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Custom scrollbar styling for the caption results */
+        .caption-scroll {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        /* Ensure the pre block handles newlines and long words correctly */
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit; /* Use body font for readability */
+        }
+    </style>
+    
+    <script>
+        // --- 1. Define Caption Templates (Core Logic) ---
+        const CAPTION_TEMPLATES = {
+            'odom': [
+                // Template 1 for Group "អូឌឹម"
+                "{user_caption}\n" +
+                "📞តេលេក្រាម 010363792 📍ទីតាំង: បុរី អូឌឹម២",
+                
+                // Template 2 for Group "អូឌឹម"
+                "{user_caption}\n" +
+                "📬 Telegram Group: https://t.me/hengthouelectronicgroup\n" +
+                "☎️ 010363792 (តេលេក្រាម)\n" +
+                "https://t.me/HengThouElectronicSaleOudeom\n" +
+                "🚖 សេវាដឹកជញ្ជូន២៥ខេត្ត ក្រុង\n" +
+                "📍 ផ្ទះលេខ A05, បុរី អូឌឹម២\n" +
+                "https://maps.app.goo.gl/BUrxe1k97VhMdjNR6?g_st=com.google.maps.preview.copy",
+                
+                // Template 3 for Group "អូឌឹម"
+                "{user_caption}\n" +
+                "🚚 សេវាដឹកជញ្ជូន ២៥ ខេត្ត ក្រុង\n" +
+                "☎️ 010 363 792 (Telegram) ឬ Pinned Message\n" +
+                "📍 សាខាទី២ អូឌឹម២: ផ្ទះលេខ A05, បុរី អូឌឹម 2 - https://maps.app.goo.gl/f9cGEkzUjh7CqDXx5?g_st=com.google.maps.preview.copy\n" +
+                "🧑‍💻 បញ្ជាទិញ: @hengthouelectronicsaleoudeom",
+            ],
+            'chomchao': [
+                // Template 1 for Group "ចោមចៅ"
+                "{user_caption}\n" +
+                "📞តេលេក្រាម 014363792 📍ទីតាំង: ផ្សារចោមចៅ",
+                
+                // Template 2 for Group "ចោមចៅ"
+                "{user_caption}\n" +
+                "📬 Telegram Group: https://t.me/hengthouelectronicgroup\n" +
+                "☎️ 014363792 (តេលេក្រាម)\n" +
+                "🚖 សេវាដឹកជញ្ជូន២៥ខេត្ត ក្រុង\n" +
+                "📍 ផ្ទះលេខ 16-17 ផ្សារចោមចៅ\n" +
+                "https://maps.app.goo.gl/11gRB6ogC9YNe5K58?g_st=com.google.maps.preview.copy",
+                
+                // Template 3 for Group "ចោមចៅ"
+                "{user_caption}\n" +
+                "🚚 សេវាដឹកជញ្ជូន ២៥ ខេត្ត ក្រុង\n" +
+                "☎️ 014 363 792 (Telegram) ឬ Pinned Message\n" +
+                "📍 សាខាទី១ ចោមចៅ: ផ្ទះលេខ 16-17, ផ្សារ ចោមចៅ - https://maps.app.goo.gl/XAEnZmtB3kmmMK766?g_st=com.google.maps.preview.copy\n" +
+                "👩‍💻 បញ្ជាទិញ: @hengthouelectronicsalecc",
+            ]
+        };
+
+        const GROUP_NAMES = {
+            'odom': "អូឌឹម",
+            'chomchao': "ចោមចៅ"
+        };
+        
+        // --- 2. Main Generation Function ---
+        function generateCaptions(event) {
+            // Prevent the default form submission behavior (which would refresh the page)
+            event.preventDefault(); 
+            
+            const captionInput = document.getElementById('caption_input').value;
+            const groupSelect = document.getElementById('group_select').value;
+            const outputContainer = document.getElementById('output_container');
+            
+            // Clear previous results
+            outputContainer.innerHTML = ''; 
+
+            const templates = CAPTION_TEMPLATES[groupSelect];
+            if (!templates) return;
+
+            templates.forEach((template, index) => {
+                // Replace the placeholder with the user's input
+                const captionText = template.replace("{user_caption}", captionInput);
+                
+                // Create the HTML structure for one caption
+                const captionDiv = document.createElement('div');
+                captionDiv.className = "bg-white p-4 rounded-lg shadow-sm border border-gray-100 relative";
+                
+                captionDiv.innerHTML = `
+                    <pre class="whitespace-pre-wrap text-sm text-gray-800">${captionText}</pre>
+                    <button onclick="copyToClipboard(this)" 
+                            class="copy-btn absolute top-2 right-2 p-1 text-sm text-blue-800 hover:text-blue-500 rounded-full transition duration-150" 
+                            title="Copy to Clipboard">
+                        <!-- Lucide Copy Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    </button>
+                    <span class="copied-message absolute top-2 right-8 text-xs text-green-600 opacity-0 transition-opacity duration-300">Copied!</span>
+                `;
+                outputContainer.appendChild(captionDiv);
+            });
+            
+            // Show the output section header
+            document.getElementById('output_header').classList.remove('hidden');
+        }
+
+        // --- 3. Utility Function for Copying Text ---
+        function copyToClipboard(button) {
+            const captionDiv = button.closest('.bg-white');
+            const preElement = captionDiv.querySelector('pre');
+            
+            // Use the standard document.execCommand('copy') for better iframe compatibility
+            const textarea = document.createElement('textarea');
+            textarea.value = preElement.textContent;
+            document.body.appendChild(textarea);
+            
+            textarea.select();
+            document.execCommand('copy');
+            
+            document.body.removeChild(textarea);
+
+            // Show 'Copied!' message feedback
+            const copiedMsg = captionDiv.querySelector('.copied-message');
+            copiedMsg.classList.remove('opacity-0');
+            copiedMsg.classList.add('opacity-100');
+            setTimeout(() => {
+                copiedMsg.classList.remove('opacity-100');
+                copiedMsg.classList.add('opacity-0');
+            }, 1500);
+        }
+        
+        // --- 4. Initialize Dropdown on Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('group_select');
+            for (const key in GROUP_NAMES) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = GROUP_NAMES[key];
+                select.appendChild(option);
+            }
+        });
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-start justify-center p-4 sm:p-6 font-sans">
+    
+    <!-- Main Application Container (Now visible by default) -->
+    <div class="w-full max-w-4xl bg-white shadow-xl rounded-xl p-6 sm:p-8 mt-10">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-800 mb-2">Lazymeng Caption Converter</h1>
+            <p class="text-gray-500">Generate structured captions for your product listings instantly.</p>
+        </header>
+
+        <!-- Input Form Section -->
+        <form id="caption_form" onsubmit="generateCaptions(event)" class="space-y-6">
+            <!-- Caption Input -->
+            <div>
+                <label for="caption_input" class="block text-sm font-medium text-gray-700 mb-2">1. Paste Your Product Caption Here</label>
+                <textarea id="caption_input" name="caption_input" rows="4" required 
+                          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-inner" 
+                          placeholder="e.g., Hot Promotion, Limited Offers, Sets, Savings..."></textarea>
+            </div>
+
+            <!-- Group Selection -->
+            <div>
+                <label for="group_select" class="block text-sm font-medium text-gray-700 mb-2">2. Choose the Group Template</label>
+                <select id="group_select" name="group_select" required 
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-inner">
+                    <!-- Options are populated dynamically by JavaScript on load -->
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" 
+                    class="w-full py-3 bg-blue-800 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300">
+                Create Final Captions
+            </button>
+        </form>
+        
+        <!-- Divider -->
+        <div class="my-8 border-t border-gray-200"></div>
+
+        <!-- Output Section -->
+        <div class="output-section">
+            <h2 id="output_header" class="text-xl font-bold text-gray-700 mb-4 flex items-center hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Final Captions (Tap to Copy)
+            </h2>
+
+            <!-- Results will be injected here by JavaScript -->
+            <div id="output_container" class="caption-scroll space-y-4 p-4 border border-gray-300 bg-gray-50 rounded-lg shadow-inner">
+                <p class="text-gray-500 p-4 border border-gray-200 rounded-lg">Enter your details and click 'Create Final Captions' to see your output here.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
