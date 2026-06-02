@@ -120,31 +120,40 @@
             document.getElementById('output_header').classList.remove('hidden');
         }
 
-        // --- 3. Utility Function for Copying Text (Now receives the whole div) ---
-        function copyToClipboard(captionDiv) {
-            // captionDiv is the main clickable element
+        // --- 3. Utility Function for Copying Text (Now with iOS support) ---
+        async function copyToClipboard(captionDiv) {
             const preElement = captionDiv.querySelector('pre');
+            const textToCopy = preElement.textContent;
             
-            // Use the standard document.execCommand('copy') for better iframe compatibility
-            const textarea = document.createElement('textarea');
-            textarea.value = preElement.textContent;
-            document.body.appendChild(textarea);
-            
-            textarea.select();
-            document.execCommand('copy');
-            
-            document.body.removeChild(textarea);
-
-            // Show 'Copied!' message feedback
-            const copiedMsg = captionDiv.querySelector('.copied-message');
-            copiedMsg.classList.remove('opacity-0');
-            copiedMsg.classList.add('opacity-100');
-            
-            // Reset the 'copied' message after a short delay
-            setTimeout(() => {
-                copiedMsg.classList.remove('opacity-100');
-                copiedMsg.classList.add('opacity-0');
-            }, 1500);
+            try {
+                // Try the modern Clipboard API first (works great on iPhone)
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(textToCopy);
+                } else {
+                    // Fallback for older browsers
+                    const textarea = document.createElement('textarea');
+                    textarea.value = textToCopy;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                }
+                
+                // Show 'Copied!' message feedback
+                const copiedMsg = captionDiv.querySelector('.copied-message');
+                copiedMsg.classList.remove('opacity-0');
+                copiedMsg.classList.add('opacity-100');
+                
+                // Reset after delay
+                setTimeout(() => {
+                    copiedMsg.classList.remove('opacity-100');
+                    copiedMsg.classList.add('opacity-0');
+                }, 1500);
+                
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy. Please try again.');
+            }
         }
         
         // --- 4. Initialize Dropdown on Load ---
