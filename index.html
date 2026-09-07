@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Lazymeng Caption Converter</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✍️</text></svg>">
@@ -11,177 +11,269 @@
     <style>
         body {
             background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
-            transition: background-color 0.3s, color 0.3s;
+            transition: background 0.3s ease;
         }
         body.dark-mode {
-            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            background: linear-gradient(135deg, #111827 0%, #0f172a 100%);
         }
-        .dark-mode {
-            color-scheme: dark;
-        }
-        .dark-mode .bg-white {
-            background-color: #1f2937;
-        }
-        .dark-mode .text-gray-900 {
-            color: #f3f4f6;
-        }
-        .dark-mode .text-gray-600 {
-            color: #d1d5db;
-        }
-        .dark-mode .border-gray-300 {
-            border-color: #4b5563;
-        }
-        .dark-mode .placeholder-gray-400::placeholder {
-            color: #9ca3af;
-        }
+        .dark-mode .bg-white { background-color: #1e293b; }
+        .dark-mode .text-gray-900 { color: #f1f5f9; }
+        .dark-mode .text-gray-600 { color: #94a3b8; }
+        .dark-mode .text-gray-500 { color: #64748b; }
+        .dark-mode .border-gray-200 { border-color: #334155; }
+        .dark-mode .border-gray-300 { border-color: #475569; }
         .dark-mode textarea,
         .dark-mode select {
-            background-color: #111827;
-            color: #f3f4f6;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            border-color: #475569;
         }
-        .caption-scroll {
-            max-height: 60vh;
-            overflow-y: auto;
+        .dark-mode .placeholder-gray-400::placeholder { color: #64748b; }
+
+        .caption-card {
+            background: white;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
         }
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: inherit;
+        .dark-mode .caption-card {
+            background: #1e293b;
+            border-color: #334155 !important;
         }
+        .caption-card:active {
+            transform: scale(0.985);
+        }
+
+        .copied-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #0f766e;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            opacity: 0;
+            transform: translateY(-6px);
+            transition: all 0.25s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .copied-badge.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .step-number {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            background-color: #0f766e;
+            width: 32px;
+            height: 32px;
+            background: #0f766e;
             color: white;
             border-radius: 50%;
-            font-weight: bold;
-            font-size: 1.25rem;
-            margin-right: 0.75rem;
+            font-weight: 700;
+            font-size: 0.95rem;
             flex-shrink: 0;
         }
-        .caption-card {
-            background-color: white;
-            color: #1f2937;
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: inherit;
+            line-height: 1.55;
+            color: #1f2937; /* force dark text in light mode */
         }
-        .dark-mode .caption-card {
-            background-color: #111827;
-            color: #f3f4f6;
-            border-color: #374151 !important;
+        .dark-mode pre {
+            color: #e2e8f0 !important; /* force light text in dark mode */
         }
-        .dark-mode .caption-card pre {
-            color: #e5e7eb;
-        }
-        .dark-mode .caption-card .text-teal-700 {
-            color: #2dd4bf;
-        }
+
         select {
             appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%230f766e' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
         }
-        select::-ms-expand {
-            display: none;
+
+        /* Platform badges */
+        .platform-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 9999px;
+            margin-bottom: 10px;
         }
-        select option {
-            padding: 0.75rem;
-            background-color: white;
-            color: #1f2937;
-            font-weight: 500;
+        .badge-tiktok {
+            background: #000000;
+            color: #ffffff;
         }
-        select option:hover {
-            background: linear-gradient(#0f766e, #0f766e);
-            background-color: #0f766e;
-            color: white;
+        .badge-facebook {
+            background: #1877F2;
+            color: #ffffff;
         }
-        select option:checked {
-            background: linear-gradient(#0f766e, #0f766e);
-            background-color: #0f766e;
-            color: white;
-        }
-        .dark-mode select option {
-            background-color: #111827;
-            color: #f3f4f6;
+        .badge-telegram {
+            background: #0088cc;
+            color: #ffffff;
         }
     </style>
-    
+</head>
+<body class="min-h-screen font-sans antialiased">
+
+    <div class="w-full max-w-xl mx-auto px-4 py-6 sm:py-10">
+        
+        <div class="bg-white dark-mode:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
+            
+            <!-- Header -->
+            <div class="relative px-5 pt-6 pb-4 sm:px-8 sm:pt-8">
+                <button onclick="toggleDarkMode()" 
+                        class="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark-mode:hover:bg-slate-700 transition"
+                        aria-label="Toggle dark mode">
+                    <svg class="w-5 h-5 text-gray-600 dark-mode:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                    </svg>
+                </button>
+
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark-mode:text-white pr-10">
+                    Lazymeng Caption Converter
+                </h1>
+                <p class="text-sm text-gray-500 mt-1">Generate professional captions in seconds</p>
+            </div>
+
+            <!-- Form -->
+            <div class="px-5 sm:px-8 space-y-6">
+                
+                <!-- Step 1 -->
+                <div>
+                    <label class="flex items-center gap-3 mb-2 text-base font-semibold text-gray-900 dark-mode:text-white">
+                        <span class="step-number">1</span>
+                        Your Caption
+                    </label>
+                    <textarea id="caption_input" rows="4"
+                              class="w-full p-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition text-gray-900 placeholder-gray-400 resize-none text-[15px]"
+                              placeholder="Paste your product caption here..."></textarea>
+                </div>
+
+                <!-- Step 2 -->
+                <div>
+                    <label class="flex items-center gap-3 mb-2 text-base font-semibold text-gray-900 dark-mode:text-white">
+                        <span class="step-number">2</span>
+                        Select Business
+                    </label>
+                    <select id="group_select"
+                            class="w-full p-3.5 pr-10 border-2 border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition text-gray-900 font-medium cursor-pointer">
+                        <option value="">-- Choose a business --</option>
+                        <option value="odom">HengThou Oudeum</option>
+                        <option value="chomchao">HengThou Chaom Chao</option>
+                        <option value="dtec">D.TEC</option>
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex flex-col gap-3 sm:flex-row pt-1">
+                    <button onclick="generateCaptions()"
+                            class="flex-1 py-3.5 px-6 bg-teal-700 text-white font-semibold rounded-xl active:scale-[0.98] transition shadow-md hover:bg-teal-800">
+                        Generate Captions
+                    </button>
+                    <button onclick="clearForm()"
+                            class="flex-1 py-3.5 px-6 bg-gray-200 text-gray-700 font-semibold rounded-xl active:scale-[0.98] transition hover:bg-gray-300 dark-mode:bg-slate-600 dark-mode:text-white dark-mode:hover:bg-slate-500">
+                        Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="mx-5 sm:mx-8 my-6 border-t border-gray-200 dark-mode:border-slate-600"></div>
+
+            <!-- Output -->
+            <div class="px-5 sm:px-8 pb-6 sm:pb-8">
+                <div id="output_header" class="hidden mb-4">
+                    <h2 class="text-lg font-bold text-gray-900 dark-mode:text-white flex items-center gap-2">
+                        <span class="w-2 h-2 bg-teal-600 rounded-full"></span>
+                        Generated Captions
+                    </h2>
+                    <p class="text-xs text-gray-500 mt-1">Tap anywhere on a card to copy</p>
+                </div>
+
+                <div id="output_container" class="space-y-3">
+                    <p class="text-gray-400 text-center py-10 text-sm">Your captions will appear here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const CAPTION_TEMPLATES = {
             'odom': [
-                "{user_caption}\n📞តេលេក្រាម 010363792 📍ទីតាំង: បុរី អូឌឹម២\n#hengthouelectronic #hengthou #ទូរទឹកកក #ម៉ាសុីនបោកខោអាវ #ទូរក្លាសេ #ម៉ាសុីនត្រជាក់",
-                "{user_caption}\n📬 Telegram Group: https://t.me/hengthouelectronicgroup\n☎️ 010363792 (តេលេក្រាម)\nhttps://t.me/HengThouElectronicSaleOudeom\n🚖 សេវាដឹកជញ្ជូន២៥ខេត្ត ក្រុង\n📍 ផ្ទះលេខ A05, បុរី អូឌឹម២\nhttps://maps.app.goo.gl/BUrxe1k97VhMdjNR6?g_st=com.google.maps.preview.copy\n#hengthouelectronic #hengthou #ទូរទឹកកក #ម៉ាសុីនបោកខោអាវ #ទូរក្លាសេ #ម៉ាសុីនត្រជាក់",
-                "{user_caption}\n☎️ 010 363 792 (Telegram) ឬ Pinned Message\n📍 សាខាទី២ អូឌឹម២: ផ្ទះលេខ A05, បុរី អូឌឹម 2 - https://maps.app.goo.gl/f9cGEkzUjh7CqDXx5?g_st=com.google.maps.preview.copy\n🧑‍💻 បញ្ជាទិញ: @hengthouelectronicsaleoudeom",
+                { platform: "TikTok", badgeClass: "badge-tiktok", text: "{user_caption}\n📞តេលេក្រាម 010363792 📍ទីតាំង: បុរី អូឌឹម២\n#hengthouelectronic #hengthou #ទូរទឹកកក #ម៉ាសុីនបោកខោអាវ #ទូរក្លាសេ #ម៉ាសុីនត្រជាក់" },
+                { platform: "Facebook", badgeClass: "badge-facebook", text: "{user_caption}\n📬 Telegram Group: https://t.me/hengthouelectronicgroup\n☎️ 010363792 (តេលេក្រាម)\nhttps://t.me/HengThouElectronicSaleOudeom\n🚖 សេវាដឹកជញ្ជូន២៥ខេត្ត ក្រុង\n📍 ផ្ទះលេខ A05, បុរី អូឌឹម២\nhttps://maps.app.goo.gl/BUrxe1k97VhMdjNR6?g_st=com.google.maps.preview.copy\n#hengthouelectronic #hengthou #ទូរទឹកកក #ម៉ាសុីនបោកខោអាវ #ទូរក្លាសេ #ម៉ាសុីនត្រជាក់" },
+                { platform: "Telegram Channel", badgeClass: "badge-telegram", text: "{user_caption}\n☎️ 010 363 792 (Telegram) ឬ Pinned Message\n📍 សាខាទី២ អូឌឹម២: ផ្ទះលេខ A05, បុរី អូឌឹម 2 - https://maps.app.goo.gl/f9cGEkzUjh7CqDXx5?g_st=com.google.maps.preview.copy\n🧑‍💻 បញ្ជាទិញ: @hengthouelectronicsaleoudeom" }
             ],
             'chomchao': [
-                "{user_caption}\n📞តេលេក្រាម 014363792 📍ទីតាំង: ផ្សារចោមចៅ\n#hengthouelectronic #hengthou #ទូរទឹកកក #ម៉ាសុីនបោកខោអាវ #ទូរក្លាសេ #ម៉ាសុីនត្រជាក់",
-                "{user_caption}\n📬 Telegram: https://t.me/hengthouelectronicgroup\n☎️ 014363792 (តេលេក្រាម)\n🚖 សេវាដឹកជញ្ជូន២៥ខេត្ត ក្រុង\n📍 ផ្ទះលេខ 16-17 ផ្សារចោមចៅ\nhttps://maps.app.goo.gl/11gRB6ogC9YNe5K58?g_st=com.google.maps.preview.copy\n#hengthouelectronic #hengthou #ទូរទឹកកក #ម៉ាសុីនបោកខោអាវ #ទូរក្លាសេ #ម៉ាសុីនត្រជាក់",
-                "{user_caption}\n☎️ 014 363 792 (Telegram) ឬ Pinned Message\n📍 សាខាទី១ ចោមចៅ: ផ្ទះលេខ 16-17 - https://maps.app.goo.gl/XAEnZmtB3kmmMK766?g_st=com.google.maps.preview.copy\n👩‍💻 @hengthouelectronicsalecc",
+                { platform: "TikTok", badgeClass: "badge-tiktok", text: "{user_caption}\n📞តេលេក្រាម 014363792 📍ទីតាំង: ផ្សារចោមចៅ\n#hengthouelectronic #hengthou #ទូរទឹកកក #ម៉ាសុីនបោកខោអាវ #ទូរក្លាសេ #ម៉ាសុីនត្រជាក់" },
+                { platform: "Facebook", badgeClass: "badge-facebook", text: "{user_caption}\n📬 Telegram: https://t.me/hengthouelectronicgroup\n☎️ 014363792 (តេលេក្រាម)\n🚖 សេវាដឹកជញ្ជូន២៥ខេត្ត ក្រុង\n📍 ផ្ទះលេខ 16-17 ផ្សារចោមចៅ\nhttps://maps.app.goo.gl/11gRB6ogC9YNe5K58?g_st=com.google.maps.preview.copy\n#hengthouelectronic #hengthou #ទូរទឹកកក #ម៉ាសុីនបោកខោអាវ #ទូរក្លាសេ #ម៉ាសុីនត្រជាក់" },
+                { platform: "Telegram Channel", badgeClass: "badge-telegram", text: "{user_caption}\n☎️ 014 363 792 (Telegram) ឬ Pinned Message\n📍 សាខាទី១ ចោមចៅ: ផ្ទះលេខ 16-17 - https://maps.app.goo.gl/XAEnZmtB3kmmMK766?g_st=com.google.maps.preview.copy\n👩‍💻 @hengthouelectronicsalecc" }
             ],
             'dtec': [
-                "{user_caption}\n📞 លេខទូរស័ព្ទ: 015-560-096\n📩 Telegram: t.me/darithdtec\n✉️ អ៊ីមែល: darith.tch@gmail.com\n📍 ទីតាំង: សង្កាត់ក្រាំងធ្នង់, រាជធានីភ្នំពេញ\n💬 សម្រាប់ព័ត៌មានបន្ថែម សូមទំនាក់ទំនងតាមលេខទូរស័ព្ទ ឬផ្ញើសារមកកាន់ Inbox ផ្ទាល់។\n#OverheadCrane #ស្ទូចលើក្បាល #ដំឡើងស្ទូចរោងចក្រ #សេវាកម្មដំឡើងស្ទូច #រោងចក្រ #ឃ្លាំងទំនិញ",
-                "{user_caption}\n📞 015-560-096 (Telegram) | ✉️ darith.tch@gmail.com | 📍 សង្កាត់ក្រាំងធ្នង់, ភ្នំពេញ\n#OverheadCrane #ស្ទូចលើក្បាល #ដំឡើងស្ទូច #រោងចក្រ #ឃ្លាំងទំនិញ",
+                { platform: "TikTok", badgeClass: "badge-tiktok", text: "{user_caption}\n📞 លេខទូរស័ព្ទ: 015-560-096\n📩 Telegram: t.me/darithdtec\n✉️ អ៊ីមែល: darith.tch@gmail.com\n📍 ទីតាំង: សង្កាត់ក្រាំងធ្នង់, រាជធានីភ្នំពេញ\n💬 សម្រាប់ព័ត៌មានបន្ថែម សូមទំនាក់ទំនងតាមលេខទូរស័ព្ទ ឬផ្ញើសារមកកាន់ Inbox ផ្ទាល់។\n#OverheadCrane #ស្ទូចលើក្បាល #ដំឡើងស្ទូចរោងចក្រ #សេវាកម្មដំឡើងស្ទូច #រោងចក្រ #ឃ្លាំងទំនិញ" },
+                { platform: "Facebook Page", badgeClass: "badge-facebook", text: "{user_caption}\n📞 015-560-096 (Telegram) | ✉️ darith.tch@gmail.com | 📍 សង្កាត់ក្រាំងធ្នង់, ភ្នំពេញ\n#OverheadCrane #ស្ទូចលើក្បាល #ដំឡើងស្ទូច #រោងចក្រ #ឃ្លាំងទំនិញ" }
             ]
         };
 
-        const GROUP_NAMES = {
-            'odom': "HengThou Oudeum",
-            'chomchao': "HengThou Chaom Chao",
-            'dtec': "D.TEC"
-        };
-
-        let allCaptions = [];
-        
         function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark-mode'));
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
         }
 
         function loadDarkMode() {
             if (localStorage.getItem('darkMode') === 'true') {
-                document.documentElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
             }
         }
 
         function clearForm() {
             document.getElementById('caption_input').value = '';
             document.getElementById('group_select').value = '';
-            document.getElementById('output_container').innerHTML = '<p class="text-gray-500 text-center py-8">Your captions will appear here</p>';
+            document.getElementById('output_container').innerHTML = '<p class="text-gray-400 text-center py-10 text-sm">Your captions will appear here</p>';
             document.getElementById('output_header').classList.add('hidden');
-            allCaptions = [];
         }
 
-        async function copyAllCaptions() {
-            if (allCaptions.length === 0) {
-                alert('No captions to copy!');
-                return;
-            }
-            const text = allCaptions.join('\n\n' + '─'.repeat(50) + '\n\n');
+        async function copyText(text, card) {
             try {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     await navigator.clipboard.writeText(text);
                 } else {
                     const ta = document.createElement('textarea');
                     ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
                     document.body.appendChild(ta);
                     ta.select();
                     document.execCommand('copy');
                     document.body.removeChild(ta);
                 }
-                alert('All captions copied!');
+
+                const badge = card.querySelector('.copied-badge');
+                if (badge) {
+                    badge.classList.add('show');
+                    setTimeout(() => badge.classList.remove('show'), 1600);
+                }
             } catch (err) {
-                console.error('Failed to copy:', err);
+                console.error('Copy failed:', err);
+                alert('Copy failed. Please try again.');
             }
         }
-        
-        function generateCaptions(event) {
-            if (event) event.preventDefault();
-            const captionInput = document.getElementById('caption_input').value;
+
+        function generateCaptions() {
+            const captionInput = document.getElementById('caption_input').value.trim();
             const groupSelect = document.getElementById('group_select').value;
             const outputContainer = document.getElementById('output_container');
-            
-            if (!captionInput.trim()) {
+
+            if (!captionInput) {
                 alert('Please enter a caption');
                 return;
             }
@@ -189,178 +281,48 @@
                 alert('Please select a business');
                 return;
             }
-            
-            outputContainer.innerHTML = '';
-            allCaptions = [];
+
             const templates = CAPTION_TEMPLATES[groupSelect];
             if (!templates) return;
 
-            templates.forEach((template, index) => {
-                const captionText = template.replace("{user_caption}", captionInput);
-                allCaptions.push(captionText);
-                
-                const captionDiv = document.createElement('div');
-                captionDiv.className = "caption-card p-5 rounded-lg shadow-sm border border-gray-200 relative cursor-pointer hover:shadow-md transition-all duration-200";
-                captionDiv.style.borderLeft = '4px solid #0f766e';
-                
-                captionDiv.innerHTML = `
-                    <div class="flex justify-between items-start gap-3">
-                        <pre class="whitespace-pre-wrap text-sm text-gray-700 flex-1">${captionText}</pre>
-                        <div class="flex gap-2 flex-shrink-0">
-                            <button type="button" onclick="event.stopPropagation(); copyCaption(this)" class="p-2 hover:bg-teal-50 rounded transition-colors duration-200" title="Copy">
-                                <svg class="w-5 h-5 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                </svg>
-                            </button>
+            outputContainer.innerHTML = '';
+
+            templates.forEach((item) => {
+                const captionText = item.text.replace("{user_caption}", captionInput);
+
+                const card = document.createElement('div');
+                card.className = "caption-card relative p-4 rounded-xl border border-gray-200 shadow-sm cursor-pointer active:bg-gray-50 dark-mode:active:bg-slate-700";
+                card.style.borderLeft = "4px solid #0f766e";
+
+                card.innerHTML = `
+                    <div class="copied-badge">Copied!</div>
+                    
+                    <div class="platform-badge ${item.badgeClass}">
+                        ${item.platform}
+                    </div>
+
+                    <div class="flex gap-3">
+                        <pre class="flex-1 text-[13.5px] sm:text-sm leading-relaxed">${captionText}</pre>
+                        <div class="flex-shrink-0 pt-0.5">
+                            <svg class="w-5 h-5 text-teal-700 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
                         </div>
                     </div>
-                    <div class="absolute top-3 right-3 text-xs text-green-600 opacity-0 transition-opacity duration-300 pointer-events-none" style="right: 2.5rem;">
-                        Copied!
-                    </div>
                 `;
-                
-                captionDiv.onmouseover = function() {
-                    this.style.boxShadow = '0 4px 12px rgba(15, 118, 110, 0.1)';
-                };
-                captionDiv.onmouseout = function() {
-                    this.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
-                };
-                
-                outputContainer.appendChild(captionDiv);
+
+                card.addEventListener('click', () => {
+                    copyText(captionText, card);
+                });
+
+                outputContainer.appendChild(card);
             });
-            
+
             document.getElementById('output_header').classList.remove('hidden');
         }
 
-        async function copyCaption(btn) {
-            const captionDiv = btn.closest('.caption-card');
-            const preElement = captionDiv.querySelector('pre');
-            const textToCopy = preElement.textContent;
-            
-            try {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(textToCopy);
-                } else {
-                    const ta = document.createElement('textarea');
-                    ta.value = textToCopy;
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(ta);
-                }
-                
-                const copiedMsg = captionDiv.querySelector('[style*="right: 2.5rem"]');
-                copiedMsg.classList.remove('opacity-0');
-                copiedMsg.classList.add('opacity-100');
-                
-                setTimeout(() => {
-                    copiedMsg.classList.add('opacity-0');
-                    copiedMsg.classList.remove('opacity-100');
-                }, 1500);
-            } catch (err) {
-                console.error('Failed to copy:', err);
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            loadDarkMode();
-            
-            const select = document.getElementById('group_select');
-            for (const key in GROUP_NAMES) {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = GROUP_NAMES[key];
-                select.appendChild(option);
-            }
-        });
-    </script>
-</head>
-<body class="min-h-screen flex items-start justify-center p-4 sm:p-6 font-sans">
-    
-    <div class="w-full max-w-2xl bg-white shadow-lg rounded-2xl p-8 mt-8">
-        <!-- Header with Dark Mode Toggle -->
-        <header class="text-center mb-10 relative">
-            <button 
-                onclick="toggleDarkMode()"
-                class="absolute top-0 right-0 p-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 dark-mode:hover:bg-gray-700"
-                title="Toggle dark mode">
-                <svg class="w-6 h-6 text-gray-700 dark-mode:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                </svg>
-            </button>
-            
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">Lazymeng Caption Converter</h1>
-            <p class="text-gray-600">Generate professional captions in seconds</p>
-        </header>
-
-        <!-- Form -->
-        <form id="caption_form" class="space-y-8">
-            <!-- Step 1 -->
-            <div>
-                <label for="caption_input" class="flex items-center mb-3 text-lg font-semibold text-gray-900">
-                    <span class="step-number">1</span>
-                    <span>Your Caption</span>
-                </label>
-                <textarea id="caption_input" name="caption_input" rows="4" required 
-                          class="w-full p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all duration-200 text-gray-900 placeholder-gray-400 font-medium resize-none" 
-                          placeholder="Paste your product caption here..."></textarea>
-            </div>
-
-            <!-- Step 2 -->
-            <div>
-                <label for="group_select" class="flex items-center mb-3 text-lg font-semibold text-gray-900">
-                    <span class="step-number">2</span>
-                    <span>Select Business</span>
-                </label>
-                <div class="relative">
-                    <select id="group_select" name="group_select" required 
-                            class="w-full p-4 pr-10 border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition-all duration-200 text-gray-900 cursor-pointer font-medium"
-                            style="background-image: url('data:image/svg+xml;utf8,<svg fill=\"%230f766e\" height=\"24\" viewBox=\"0 0 24 24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M7 10l5 5 5-5z\"/></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
-                        <option value="">-- Choose a business --</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Button Group -->
-            <div class="flex gap-3 flex-col sm:flex-row">
-                <button type="button" 
-                        onclick="generateCaptions(event)"
-                        class="flex-1 py-4 px-6 bg-teal-700 text-white font-bold text-lg rounded-lg shadow-md hover:bg-teal-800 active:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 transition-all duration-200 cursor-pointer transform hover:scale-105">
-                    Generate Captions
-                </button>
-                <button type="button" 
-                        onclick="clearForm()"
-                        class="flex-1 py-4 px-6 bg-gray-400 text-white font-bold text-lg rounded-lg shadow-md hover:bg-gray-500 active:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 cursor-pointer">
-                    Clear
-                </button>
-            </div>
-        </form>
-        
-        <!-- Divider -->
-        <div class="my-10 border-t border-gray-300"></div>
-
-        <!-- Output -->
-        <div>
-            <h2 id="output_header" class="text-xl font-bold text-gray-900 hidden flex items-center">
-                <span class="w-1.5 h-1.5 bg-teal-700 rounded-full mr-2"></span>
-                Generated Captions
-            </h2>
-
-            <div id="output_container" class="caption-scroll space-y-3">
-                <p class="text-gray-500 text-center py-8">Your captions will appear here</p>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Show Copy All button when captions are generated
-        const originalGenerateCaptions = generateCaptions;
-        generateCaptions = function(event) {
-            originalGenerateCaptions(event);
-            if (allCaptions.length > 0) {
-                document.getElementById('copy_all_btn').classList.remove('hidden');
-            }
-        };
+        // Init
+        document.addEventListener('DOMContentLoaded', loadDarkMode);
     </script>
 </body>
 </html>
